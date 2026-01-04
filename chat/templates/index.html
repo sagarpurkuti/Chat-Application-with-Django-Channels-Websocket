@@ -123,8 +123,7 @@
         <h1>💬 Chat Room</h1>
         <p class="subtitle">Enter a room name to start chatting</p>
         
-        <form method="post" action="{% url 'room' '' %}" id="room-form">
-            {% csrf_token %}
+        <form method="get" action="#" id="room-form">
             <div class="form-group">
                 <label for="room_name">Room Name</label>
                 <input 
