@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-%7m6ubw^$ebgbb!mv1uod#%nryt+x)=+p@(u4y*g9xq71&st^1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # For development only
 
 
 # Application definition
@@ -36,8 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'chat',  # Must come before staticfiles to override runserver command
     'django.contrib.staticfiles',
-    'chat',
     'channels'
 ]
 
@@ -118,4 +118,39 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# ASGI Application for WebSocket support
 ASGI_APPLICATION = 'core.routing.application'
+
+# Channel Layers configuration for WebSocket communication
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    }
+}
+
+# Logging configuration for debugging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'chat': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}

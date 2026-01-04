@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room - {{ room_name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            height: 80vh;
+            max-height: 700px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-header h2 {
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .room-name {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .username {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 0.9em;
+        }
+
+        .timestamp {
+            font-size: 0.75em;
+            color: #999;
+        }
+
+        .message-content {
+            background: white;
+            padding: 12px 18px;
+            border-radius: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            word-wrap: break-word;
+            max-width: 70%;
+        }
+
+        .message.own-message {
+            align-items: flex-end;
+        }
+
+        .message.own-message .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.own-message .username {
+            color: #764ba2;
+        }
+
+        .chat-input-container {
+            padding: 20px 30px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .send-btn:active {
+            transform: translateY(0);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4caf50;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>
+                💬 Chat Room
+                <span class="room-name">{{ room_name }}</span>
+                <span class="status-indicator" id="status-indicator"></span>
+            </h2>
+            <a href="{% url 'index' %}" class="back-btn">← Back</a>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <div class="empty-state">No messages yet. Start the conversation!</div>
+        </div>
+
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                id="chat-input" 
+                class="chat-input" 
+                placeholder="Connecting to chat..."
+                autocomplete="off"
+                
+            >
+            <button id="send-btn" class="send-btn" >Send</button>
+        </div>
+    </div>
+
+    {{ room_name|json_script:"room-name" }}
+    {% if request.user.is_authenticated %}
+        {{ request.user.username|json_script:"user-username" }}
+    {% else %}
+        <script id="user-username" type="application/json">"Anonymous"</script>
+    {% endif %}
+
+    <script>
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+        const userUsername = JSON.parse(document.getElementById('user-username').textContent) || 'Anonymous';
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const statusIndicator = document.getElementById('status-indicator');
+
+        // WebSocket connection
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const chatSocket = new WebSocket(
+            protocol + '//' + window.location.host + '/ws/chat/' + roomName + '/'
+        );
+
+        // Remove empty state when first message arrives
+        function removeEmptyState() {
+            const emptyState = chatMessages.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+        }
+
+        // Format timestamp
+        function getTimestamp() {
+            const now = new Date();
+            return now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+        }
+
+        // Add message to chat
+        function addMessage(username, message, isOwn = false) {
+            removeEmptyState();
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message' + (isOwn ? ' own-message' : '');
+            
+            const messageHeader = document.createElement('div');
+            messageHeader.className = 'message-header';
+            
+            const usernameSpan = document.createElement('span');
+            usernameSpan.className = 'username';
+            usernameSpan.textContent = username;
+            
+            const timestampSpan = document.createElement('span');
+            timestampSpan.className = 'timestamp';
+            timestampSpan.textContent = getTimestamp();
+            
+            messageHeader.appendChild(usernameSpan);
+            messageHeader.appendChild(timestampSpan);
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = message;
+            
+            messageDiv.appendChild(messageHeader);
+            messageDiv.appendChild(messageContent);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // WebSocket event handlers
+        chatSocket.onopen = function() {
+            console.log('WebSocket connection opened successfully');
+            statusIndicator.style.background = '#4caf50';
+            sendBtn.disabled = false;
+            chatInput.disabled = false;
+            chatInput.placeholder = 'Type your message here...';
+        };
+
+        chatSocket.onmessage = function(e) {
+            try {
+                const data = JSON.parse(e.data);
+                if (data.message && data.username) {
+                    const isOwn = data.username === userUsername;
+                    addMessage(data.username, data.message, isOwn);
+                }
+            } catch (error) {
+                console.error('Error parsing WebSocket message:', error);
+            }
+        };
+
+        chatSocket.onerror = function(error) {
+            console.error('WebSocket error:', error);
+            statusIndicator.style.background = '#f44336';
+            sendBtn.disabled = true;
+            chatInput.disabled = true;
+        };
+
+        chatSocket.onclose = function(event) {
+            console.log('WebSocket connection closed', event.code, event.reason);
+            statusIndicator.style.background = '#999';
+            sendBtn.disabled = true;
+            chatInput.disabled = true;
+            
+            // Attempt to reconnect after 3 seconds if not a normal closure
+            if (event.code !== 1000) {
+                setTimeout(function() {
+                    console.log('Attempting to reconnect...');
+                    location.reload();
+                }, 3000);
+            }
+        };
+
+        // Send message function
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) {
+                return;
+            }
+            
+            if (chatSocket.readyState === WebSocket.OPEN) {
+                try {
+                    chatSocket.send(JSON.stringify({
+                        'message': message,
+                        'username': userUsername
+                    }));
+                    chatInput.value = '';
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    alert('Failed to send message. Please try again.');
+                }
+            } else {
+                alert('WebSocket is not connected. Please wait for connection...');
+                console.warn('WebSocket state:', chatSocket.readyState);
+            }
+        }
+
+        // Event listeners
+        sendBtn.addEventListener('click', sendMessage);
+        
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Focus input on load
+        chatInput.focus();
+    </script>
+</body>
+</html>
